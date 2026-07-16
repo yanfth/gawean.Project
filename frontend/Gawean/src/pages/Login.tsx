@@ -1,0 +1,128 @@
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "./Auth.css";
+
+export default function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!email || !password) {
+      setError("Email dan password wajib diisi.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, remember }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || "Email atau password salah.");
+      }
+
+      const data = await res.json();
+      // Simpan token/session sesuai strategi auth backend (Sanctum/JWT)
+      localStorage.setItem("gawean_token", data.token);
+
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Gagal masuk. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-wrap">
+        <div className="auth-card">
+          <Link to="/" className="auth-brand-link">
+            Gaw<span>ean</span>
+          </Link>
+
+          <span className="auth-eyebrow">khusus mahasiswa se-Indonesia</span>
+          <h1>
+            Masuk ke <em>Gawean</em>
+          </h1>
+          <p className="auth-sub">
+            Lanjutkan cari jasa atau kelola jasa yang lagi kamu buka.
+          </p>
+
+          {error && <div className="auth-error">{error}</div>}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="auth-field">
+              <label htmlFor="email">Email kampus</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="nama@student.kampus.ac.id"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="password">Password</label>
+              <div className="auth-password-wrap">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Masukkan password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="auth-toggle-visibility"
+                  onClick={() => setShowPassword((v) => !v)}
+                >
+                  {showPassword ? "SEMBUNYIKAN" : "LIHAT"}
+                </button>
+              </div>
+            </div>
+
+            <div className="auth-row-between">
+              <label className="auth-remember">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                />
+                Ingat saya
+              </label>
+              <Link to="/forgot-password" className="auth-forgot">
+                Lupa password?
+              </Link>
+            </div>
+
+            <button type="submit" className="auth-submit" disabled={loading}>
+              {loading ? "Memproses..." : "Masuk"}
+            </button>
+          </form>
+
+          <div className="auth-divider">atau</div>
+
+          <p className="auth-switch">
+            Belum punya akun? <Link to="/register">Daftar sekarang</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
