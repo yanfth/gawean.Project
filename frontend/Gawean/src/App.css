@@ -65,6 +65,7 @@ h3 {
 .nav-left,
 .nav-right {
   display: flex;
+  align-items: center;
   gap: 32px;
 }
 

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "./App.css";
 
 const kategori = [
@@ -86,13 +87,14 @@ export default function App() {
             <a href="#">Testimoni</a>
             <a href="#">FAQ</a>
             <a href="#">Kontak</a>
+            <Link to="/login" className="btn-masuk" style={{ background: 'var(--mustard)', color: 'var(--indigo)', fontWeight: '700', padding: '0.5rem 1.25rem', borderRadius: '0.5rem', textDecoration: 'none', marginLeft: '0.5rem' }}>Masuk</Link>
           </div>
         </nav>
 
         <section className="hero">
           <span className="eyebrow">khusus mahasiswa se-Indonesia</span>
           <h1>
-            Jasa Mahasiswa Asli, <em>Harga Mahasiswa</em>
+            Jasa Mahasiswa Asli,<br /><em>Harga Mahasiswa</em>
           </h1>
           <p>
             Gawean menghubungkan mahasiswa yang butuh jasa desain, coding,
