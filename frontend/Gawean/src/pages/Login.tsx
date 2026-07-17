@@ -25,9 +25,13 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/login`, {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
+      const res = await fetch(`${baseUrl}/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({ email, password, role, remember }),
       });
 
@@ -46,6 +50,7 @@ export default function Login() {
         navigate("/dashboard-pencari");
       }
     } catch (err: any) {
+      console.error("Fetch Error:", err);
       setError(err.message || "Gagal masuk. Coba lagi.");
     } finally {
       setLoading(false);
