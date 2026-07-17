@@ -118,6 +118,28 @@ export default function DashboardPenyedia() {
     }
   };
 
+  const handleDeleteOrder = async (orderId: number) => {
+    if (!confirm('Hapus seluruh chat dan pesanan ini?')) return;
+    try {
+      const res = await fetch(`${baseUrl}/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (res.ok) {
+        setOrders(prev => prev.filter(o => o.id !== orderId));
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Gagal menghapus chat.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan pada server.');
+    }
+  };
+
   // ---- Data Fetching ----
   const fetchJasa = async () => {
     try {
@@ -552,6 +574,9 @@ export default function DashboardPenyedia() {
                         </span>
                         <button onClick={() => setActiveOrder(order)} style={{ background: 'var(--dash-primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
                           <MessageSquare size={16} /> Buka Chat
+                        </button>
+                        <button onClick={() => handleDeleteOrder(order.id)} title="Hapus Semua Chat" style={{ background: 'rgba(220, 38, 38, 0.1)', color: '#dc2626', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </div>

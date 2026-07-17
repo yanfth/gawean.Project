@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send } from 'lucide-react';
+import { X, Send, Trash2 } from 'lucide-react';
 import './ChatModal.css';
 
 interface User {
@@ -117,6 +117,29 @@ export default function ChatModal({ order, currentUser, token, baseUrl, onClose,
     }
   };
 
+  const handleDeleteMessage = async (messageId: number) => {
+    if (!confirm('Hapus pesan ini?')) return;
+    
+    try {
+      const res = await fetch(`${baseUrl}/messages/${messageId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (res.ok) {
+        setMessages(prev => prev.filter(m => m.id !== messageId));
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Gagal menghapus pesan.');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="modal-overlay">
       <div className="chat-modal">
@@ -147,18 +170,49 @@ export default function ChatModal({ order, currentUser, token, baseUrl, onClose,
 
         <div className="chat-messages">
           {messages.map((msg, idx) => {
-            const isMe = msg.sender_id === currentUser.id;
+            let isMe = false;
+            
+            // Safe IDs
+            const providerUserId = order.jasa?.penyedia?.user?.id;
+            const seekerUserId = order.pencari_jasa?.user?.id;
+
+            if (isProvider) {
+              // Viewing as provider
+              if (providerUserId) {
+                isMe = msg.sender_id === providerUserId;
+              } else {
+                isMe = msg.sender_id === currentUser.id;
+              }
+            } else {
+              // Viewing as seeker
+              if (seekerUserId) {
+                isMe = msg.sender_id === seekerUserId;
+              } else {
+                isMe = msg.sender_id === currentUser.id;
+              }
+            }
             
             // Format time
             const date = new Date(msg.created_at);
             const timeString = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
             return (
-              <div key={msg.id || idx} className={`chat-bubble-container ${isMe ? 'me' : 'them'}`}>
-                {!isMe && <span className="chat-sender">{msg.sender?.name || 'User'}</span>}
+              <div key={msg.id} className={`chat-bubble-container ${isMe ? 'me' : 'them'}`}>
+                {!isMe && <div className="chat-sender">{msg.sender?.name || 'User'}</div>}
                 <div className="chat-bubble">
-                  <div className="chat-content">{msg.content}</div>
-                  <div className="chat-time">{timeString}</div>
+                  {msg.content}
+                  <div className="chat-time">
+                    {timeString}
+                  </div>
+                  {isMe && (
+                    <button 
+                      className="delete-msg-btn" 
+                      onClick={() => handleDeleteMessage(msg.id)}
+                      title="Hapus Pesan"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
                 </div>
               </div>
             );

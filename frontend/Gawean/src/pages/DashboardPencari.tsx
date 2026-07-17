@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, LogOut, Briefcase, Code, Palette, GraduationCap, PenTool, X, MessageCircle, ShoppingCart, Handshake, Star, ImageIcon, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Search, LogOut, Briefcase, Code, Palette, GraduationCap, PenTool, X, MessageCircle, ShoppingCart, Handshake, Star, ImageIcon, ChevronLeft, ChevronRight, MessageSquare, Trash2 } from 'lucide-react';
 import ChatModal from '../components/ChatModal';
 import './Dashboard.css';
 
@@ -53,17 +53,28 @@ export default function DashboardPencari() {
   const [activeTab, setActiveTab] = useState<'detail' | 'testimoni'>('detail');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  const [mainView, setMainView] = useState<'browse' | 'orders'>('browse');
+  const [mainView, setMainView] = useState<'browse' | 'orders' | 'profile'>('browse');
   const [orders, setOrders] = useState<any[]>([]);
   const [activeOrder, setActiveOrder] = useState<any>(null);
 
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
-  const currentUser = userStr ? JSON.parse(userStr) : null;
+  const [currentUser, setCurrentUser] = useState(userStr ? JSON.parse(userStr) : null);
+  
+  // Profile Form State
+  const [profileName, setProfileName] = useState(currentUser?.name || '');
+  const [profileEmail, setProfileEmail] = useState(currentUser?.email || '');
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
   const userName = currentUser?.name || 'User';
   const initial = userName.charAt(0).toUpperCase();
   const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
   const storageUrl = baseUrl.replace('/api', '') + '/storage/';
+
+  const photoUrl = currentUser?.profile_photo 
+    ? (currentUser.profile_photo.startsWith('http') ? currentUser.profile_photo : `${storageUrl}${currentUser.profile_photo}`) 
+    : null;
 
   useEffect(() => {
     if (!token) {
@@ -167,6 +178,63 @@ export default function DashboardPencari() {
     }
   };
 
+  const handleDeleteOrder = async (orderId: number) => {
+    if (!confirm('Hapus seluruh chat dan pesanan ini?')) return;
+    try {
+      const res = await fetch(`${baseUrl}/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (res.ok) {
+        setOrders(prev => prev.filter(o => o.id !== orderId));
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Gagal menghapus chat.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan pada server.');
+    }
+  };
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append('name', profileName);
+      formData.append('email', profileEmail);
+      if (profilePhoto) {
+        formData.append('profile_photo', profilePhoto);
+      }
+
+      const res = await fetch(`${baseUrl}/profile`, {
+        method: 'POST', // Note: HTML forms with files usually use POST. Laravel can handle POST for updates.
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        alert('Profil berhasil diperbarui!');
+        setProfilePhoto(null); // reset file input state
+      } else {
+        const errData = await res.json();
+        alert('Gagal memperbarui profil: ' + (errData.message || 'Error'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan pada server.');
+    }
+  };
+
   return (
     <div className={`pencari-wrapper ${isSidebarCollapsed ? 'collapsed' : ''}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--dash-bg)' }}>
       {/* Navbar */}
@@ -177,13 +245,16 @@ export default function DashboardPencari() {
         <div className="user-nav-links">
           <a href="#" className={mainView === 'browse' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setMainView('browse'); }}>Cari Jasa</a>
           <a href="#" className={mainView === 'orders' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setMainView('orders'); fetchOrders(); }}>Pesanan & Chat</a>
-          <a href="#">Buka Jasa</a>
-          <a href="#">Forum</a>
-          <a href="#">Cara Kerja</a>
+          <a href="#" className={mainView === 'profile' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setMainView('profile'); }}>Profil Saya</a>
         </div>
         <div className="user-nav-right">
+          <div className="notification-bell"></div>
+          {photoUrl ? (
+            <img src={photoUrl} alt="Profile" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            <div className="nav-user-avatar">{initial}</div>
+          )}
           <span className="nav-user-name">{userName}</span>
-          <div className="nav-user-avatar">{initial}</div>
           <button onClick={handleLogout} className="nav-logout-btn">
             <LogOut size={14} /> Keluar
           </button>
@@ -244,10 +315,75 @@ export default function DashboardPencari() {
           </div>
         </aside>
 
-        {/* Main Content */}
+        {/* Main Content Area */}
         <main className="pencari-main">
-          
-          {mainView === 'browse' && (
+        
+        {mainView === 'profile' && (
+          <div className="profile-section animate-fade-in" style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+            <h2 style={{ marginBottom: '20px' }}>Profil Saya</h2>
+            <form onSubmit={handleProfileUpdate} style={{ background: 'var(--dash-card-bg)', padding: '30px', borderRadius: '12px', border: '1px solid var(--dash-border)' }}>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--dash-bg)', overflow: 'hidden', border: '2px solid var(--dash-primary)' }}>
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : photoUrl ? (
+                    <img src={photoUrl} alt="Current Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'var(--dash-text-muted)' }}>{initial}</div>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="photo-upload" style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    Ganti Foto
+                  </label>
+                  <input 
+                    id="photo-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setProfilePhoto(file);
+                        setPhotoPreview(URL.createObjectURL(file));
+                      }
+                    }}
+                  />
+                  <p style={{ fontSize: '0.8rem', color: 'var(--dash-text-muted)', marginTop: '5px' }}>Format JPG, PNG, GIF. Max 2MB.</p>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Nama Lengkap</label>
+                <input 
+                  type="text" 
+                  value={profileName} 
+                  onChange={(e) => setProfileName(e.target.value)} 
+                  required
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--dash-border)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '30px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Alamat Email</label>
+                <input 
+                  type="email" 
+                  value={profileEmail} 
+                  onChange={(e) => setProfileEmail(e.target.value)} 
+                  required
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--dash-border)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+                />
+              </div>
+
+              <button type="submit" style={{ width: '100%', padding: '14px', borderRadius: '8px', border: 'none', background: 'var(--dash-primary)', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+                Simpan Perubahan
+              </button>
+            </form>
+          </div>
+        )}
+
+        {mainView === 'browse' && (
             <>
               <div className="pencari-header">
                 <h1>Temukan Jasa yang Tepat</h1>
@@ -374,6 +510,9 @@ export default function DashboardPencari() {
                         </span>
                         <button onClick={() => setActiveOrder(order)} style={{ background: 'var(--dash-primary)', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
                           <MessageSquare size={16} /> Chat
+                        </button>
+                        <button onClick={() => handleDeleteOrder(order.id)} title="Hapus Semua Chat" style={{ background: 'rgba(220, 38, 38, 0.1)', color: '#dc2626', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </div>
