@@ -38,4 +38,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Profile Update
     Route::post('/profile', [\App\Http\Controllers\ProfileController::class, 'update']);
+
+    // Community (Group Chat)
+    Route::get('/community/channels', [\App\Http\Controllers\CommunityController::class, 'channels']);
+    Route::post('/community/channels', [\App\Http\Controllers\CommunityController::class, 'createChannel']);
+    Route::delete('/community/channels/{id}', [\App\Http\Controllers\CommunityController::class, 'deleteChannel']);
+    Route::get('/community/channels/{id}/messages', [\App\Http\Controllers\CommunityController::class, 'messages']);
+    Route::post('/community/channels/{id}/messages', [\App\Http\Controllers\CommunityController::class, 'sendMessage']);
+    Route::delete('/community/messages/{id}', [\App\Http\Controllers\CommunityController::class, 'deleteMessage']);
 });
