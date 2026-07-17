@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\TestimonialController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -14,4 +16,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('jasa', \App\Http\Controllers\JasaController::class);
     Route::get('/all-jasa', [\App\Http\Controllers\JasaController::class, 'getAll']);
+
+    // Verification
+    Route::post('/verification/upload', [VerificationController::class, 'upload']);
+    Route::get('/verification/status', [VerificationController::class, 'status']);
+
+    // Testimonials
+    Route::get('/testimonials', [TestimonialController::class, 'index']);
+    Route::post('/testimonials', [TestimonialController::class, 'store']);
+    Route::put('/testimonials/{id}', [TestimonialController::class, 'update']);
+    Route::delete('/testimonials/{id}', [TestimonialController::class, 'destroy']);
 });
