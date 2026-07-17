@@ -21,7 +21,7 @@ class OrderController extends Controller
 
         // If user is a pencari jasa (has orders)
         if ($user->pencariJasa) {
-            $ordersAsPencari = Order::with(['jasa.penyedia.user', 'messages'])
+            $ordersAsPencari = Order::with(['jasa.penyedia.user', 'pencariJasa.user', 'messages'])
                 ->where('pencari_jasa_id', $user->pencariJasa->id)
                 ->orderBy('updated_at', 'desc')
                 ->get();
@@ -29,7 +29,7 @@ class OrderController extends Controller
 
         // If user is a penyedia jasa (has jasas which have orders)
         if ($user->penyediaJasa) {
-            $ordersAsPenyedia = Order::with(['pencariJasa.user', 'jasa', 'messages'])
+            $ordersAsPenyedia = Order::with(['jasa.penyedia.user', 'pencariJasa.user', 'messages'])
                 ->whereHas('jasa', function ($query) use ($user) {
                     $query->where('penyedia_jasa_id', $user->penyediaJasa->id);
                 })
@@ -67,11 +67,13 @@ class OrderController extends Controller
             return response()->json(['message' => 'Anda tidak bisa memesan jasa Anda sendiri.'], 403);
         }
 
-        // Check if an active order already exists
+        // Check if an order already exists for this jasa and user
         $order = Order::firstOrCreate(
             [
                 'pencari_jasa_id' => $user->pencariJasa->id,
                 'jasa_id' => $validated['jasa_id'],
+            ],
+            [
                 'status' => 'negotiating'
             ]
         );
@@ -157,5 +159,41 @@ class OrderController extends Controller
         $order->update($validated);
 
         return response()->json(['message' => 'Status berhasil diupdate', 'order' => $order]);
+    }
+
+    /**
+     * Delete a message
+     */
+    public function deleteMessage(Request $request, $id)
+    {
+        $message = Message::findOrFail($id);
+        
+        if ($message->sender_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $message->delete();
+
+        return response()->json(['message' => 'Message deleted.']);
+    }
+
+    /**
+     * Delete an order
+     */
+    public function destroy(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        $user = $request->user();
+        
+        $isPencari = $user->pencariJasa && $order->pencari_jasa_id === $user->pencariJasa->id;
+        $isPenyedia = $user->penyediaJasa && $order->jasa->penyedia_jasa_id === $user->penyediaJasa->id;
+
+        if (!$isPencari && !$isPenyedia) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $order->delete();
+
+        return response()->json(['message' => 'Pesanan berhasil dihapus.']);
     }
 }

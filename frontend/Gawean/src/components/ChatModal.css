@@ -127,10 +127,37 @@
   border-bottom-right-radius: 4px;
 }
 .them .chat-bubble {
-  background: var(--dash-card-bg);
-  color: var(--dash-text);
-  border: 1px solid var(--dash-border);
+  background: var(--dash-sidebar);
+  color: #fff;
+  border: none;
   border-bottom-left-radius: 4px;
+}
+
+.delete-msg-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  color: var(--dash-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: -28px;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s, color 0.2s;
+}
+
+.chat-bubble-container.me:hover .delete-msg-btn {
+  opacity: 1;
+}
+
+.delete-msg-btn:hover {
+  background: rgba(220, 38, 38, 0.9);
+  color: #fff;
 }
 
 .chat-input-area {
