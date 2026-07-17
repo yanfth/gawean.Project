@@ -12,8 +12,9 @@ class VerificationController extends Controller
     public function upload(Request $request)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->penyediaJasa) {
+            $user->penyediaJasa()->create();
+            $user->load('penyediaJasa');
         }
 
         $request->validate([
@@ -41,8 +42,11 @@ class VerificationController extends Controller
     public function status(Request $request)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->penyediaJasa) {
+            return response()->json([
+                'is_verified' => false,
+                'verification_doc' => null,
+            ]);
         }
 
         return response()->json([

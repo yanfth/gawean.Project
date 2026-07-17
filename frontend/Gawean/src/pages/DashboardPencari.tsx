@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, LogOut, Briefcase, Code, Palette, GraduationCap, PenTool, X, MessageCircle, ShoppingCart, Handshake, Star, ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, LogOut, Briefcase, Code, Palette, GraduationCap, PenTool, X, MessageCircle, ShoppingCart, Handshake, Star, ImageIcon, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import ChatModal from '../components/ChatModal';
 import './Dashboard.css';
 
 interface User {
@@ -51,6 +52,10 @@ export default function DashboardPencari() {
   const [selectedJasa, setSelectedJasa] = useState<Jasa | null>(null);
   const [activeTab, setActiveTab] = useState<'detail' | 'testimoni'>('detail');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  const [mainView, setMainView] = useState<'browse' | 'orders'>('browse');
+  const [orders, setOrders] = useState<any[]>([]);
+  const [activeOrder, setActiveOrder] = useState<any>(null);
 
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
@@ -66,8 +71,26 @@ export default function DashboardPencari() {
       return;
     }
     fetchAllJasa();
+    fetchOrders();
     // eslint-disable-next-line
   }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch(`${baseUrl}/orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data.as_pencari);
+      }
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+    }
+  };
 
   const fetchAllJasa = async () => {
     try {
@@ -118,6 +141,32 @@ export default function DashboardPencari() {
     setActiveTab('detail');
   };
 
+  const handleStartChat = async (jasaId: number) => {
+    try {
+      const res = await fetch(`${baseUrl}/orders`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ jasa_id: jasaId, initial_message: 'Halo, saya tertarik dengan jasa Anda.' })
+      });
+      if (res.ok) {
+        const newOrder = await res.json();
+        setActiveOrder(newOrder);
+        setSelectedJasa(null);
+        setMainView('orders');
+        fetchOrders();
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Gagal memulai pesanan.');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className={`pencari-wrapper ${isSidebarCollapsed ? 'collapsed' : ''}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--dash-bg)' }}>
       {/* Navbar */}
@@ -126,7 +175,8 @@ export default function DashboardPencari() {
           Gaw<span>ean</span>
         </div>
         <div className="user-nav-links">
-          <a href="#" className="active">Cari Jasa</a>
+          <a href="#" className={mainView === 'browse' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setMainView('browse'); }}>Cari Jasa</a>
+          <a href="#" className={mainView === 'orders' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setMainView('orders'); fetchOrders(); }}>Pesanan & Chat</a>
           <a href="#">Buka Jasa</a>
           <a href="#">Forum</a>
           <a href="#">Cara Kerja</a>
@@ -196,10 +246,13 @@ export default function DashboardPencari() {
 
         {/* Main Content */}
         <main className="pencari-main">
-          <div className="pencari-header">
-            <h1>Temukan Jasa yang Tepat</h1>
-            <p>Temukan freelancer mahasiswa terbaik untuk proyekmu.</p>
-          </div>
+          
+          {mainView === 'browse' && (
+            <>
+              <div className="pencari-header">
+                <h1>Temukan Jasa yang Tepat</h1>
+                <p>Temukan freelancer mahasiswa terbaik untuk proyekmu.</p>
+              </div>
 
           {/* Category Tags */}
           <div className="category-tags">
@@ -299,6 +352,36 @@ export default function DashboardPencari() {
               })
             )}
           </div>
+          </>
+          )}
+
+          {mainView === 'orders' && (
+            <div className="orders-view" style={{ padding: '20px' }}>
+              <h2>Pesanan Saya</h2>
+              {orders.length === 0 ? (
+                <p style={{ color: 'var(--dash-text-muted)' }}>Belum ada pesanan.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+                  {orders.map(order => (
+                    <div key={order.id} style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '12px', border: '1px solid var(--dash-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 5px 0' }}>{order.jasa?.title}</h4>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--dash-text-muted)' }}>Penyedia: {order.jasa?.penyedia?.user?.name}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <span className={`status-badge status-${order.status}`}>
+                          {order.status === 'negotiating' ? 'Nego' : order.status === 'accepted' ? 'Diterima' : order.status === 'rejected' ? 'Ditolak' : 'Selesai'}
+                        </span>
+                        <button onClick={() => setActiveOrder(order)} style={{ background: 'var(--dash-primary)', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <MessageSquare size={16} /> Chat
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
 
@@ -376,13 +459,13 @@ export default function DashboardPencari() {
 
               {/* Action Buttons */}
               <div className="detail-modal-actions">
-                <button className="detail-btn detail-btn-chat" onClick={() => alert('Fitur Chat akan segera hadir!')}>
+                <button className="detail-btn detail-btn-chat" onClick={() => handleStartChat(selectedJasa.id)}>
                   <MessageCircle size={16} /> Chat
                 </button>
-                <button className="detail-btn detail-btn-checkout" onClick={() => alert('Fitur Checkout akan segera hadir!')}>
+                <button className="detail-btn detail-btn-checkout" onClick={() => handleStartChat(selectedJasa.id)}>
                   <ShoppingCart size={16} /> Checkout
                 </button>
-                <button className="detail-btn detail-btn-nego" onClick={() => alert('Fitur Nego akan segera hadir!')}>
+                <button className="detail-btn detail-btn-nego" onClick={() => handleStartChat(selectedJasa.id)}>
                   <Handshake size={16} /> Nego
                 </button>
               </div>
@@ -430,6 +513,15 @@ export default function DashboardPencari() {
             </div>
           </div>
         </div>
+      )}
+      {activeOrder && (
+        <ChatModal 
+          order={activeOrder}
+          currentUser={currentUser}
+          token={token!}
+          baseUrl={baseUrl}
+          onClose={() => { setActiveOrder(null); fetchOrders(); }}
+        />
       )}
     </div>
   );

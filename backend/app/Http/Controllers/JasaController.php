@@ -13,8 +13,8 @@ class JasaController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
-            return response()->json(['message' => 'Unauthorized or profile not found'], 403);
+        if (!$user->penyediaJasa) {
+            return response()->json([]);
         }
 
         $jasas = Jasa::where('penyedia_jasa_id', $user->penyediaJasa->id)->orderBy('created_at', 'desc')->get();
@@ -27,8 +27,9 @@ class JasaController extends Controller
     public function store(Request $request)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->penyediaJasa) {
+            $user->penyediaJasa()->create();
+            $user->load('penyediaJasa');
         }
 
         // Check verification status
@@ -79,8 +80,8 @@ class JasaController extends Controller
     public function update(Request $request, string $id)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->penyediaJasa) {
+            return response()->json(['message' => 'Jasa tidak ditemukan atau bukan milik Anda'], 404);
         }
 
         $jasa = Jasa::where('id', $id)->where('penyedia_jasa_id', $user->penyediaJasa->id)->first();
@@ -113,8 +114,8 @@ class JasaController extends Controller
     public function destroy(Request $request, string $id)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->penyediaJasa) {
+            return response()->json(['message' => 'Jasa tidak ditemukan atau bukan milik Anda'], 404);
         }
 
         $jasa = Jasa::where('id', $id)->where('penyedia_jasa_id', $user->penyediaJasa->id)->first();

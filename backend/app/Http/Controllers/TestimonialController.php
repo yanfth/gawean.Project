@@ -13,8 +13,8 @@ class TestimonialController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->penyediaJasa) {
+            return response()->json([]);
         }
 
         $testimonials = Testimonial::where('penyedia_jasa_id', $user->penyediaJasa->id)
@@ -30,8 +30,9 @@ class TestimonialController extends Controller
     public function store(Request $request)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->penyediaJasa) {
+            $user->penyediaJasa()->create();
+            $user->load('penyediaJasa');
         }
 
         $validated = $request->validate([
@@ -56,7 +57,7 @@ class TestimonialController extends Controller
     public function update(Request $request, string $id)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
+        if (!$user->penyediaJasa) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -85,7 +86,7 @@ class TestimonialController extends Controller
     public function destroy(Request $request, string $id)
     {
         $user = $request->user();
-        if ($user->role !== 'penyedia_jasa' || !$user->penyediaJasa) {
+        if (!$user->penyediaJasa) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
