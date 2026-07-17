@@ -1,0 +1,396 @@
+/* Dashboard.css - Diselaraskan dengan tema Gawean (App.css) */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap");
+
+:root {
+  /* Mengikuti palet App.css */
+  --dash-bg: #faf7ee; /* --paper */
+  --dash-sidebar: #1b2a4a; /* --indigo */
+  --dash-sidebar-2: #233657; /* --indigo-2 */
+  --dash-primary: #e8a93b; /* --mustard */
+  --dash-primary-hover: #d69526;
+  --dash-primary-text: #1b2a4a; /* teks di atas tombol mustard */
+  --dash-text-main: #22304a; /* --ink */
+  --dash-text-muted: #5c6b85; /* --ink-soft */
+  --dash-sidebar-text: #c9d2e4;
+  --dash-border: #e4dfd0; /* --line */
+  --dash-card-bg: #ffffff; /* --card */
+  --dash-danger: #c65d4b;
+  --dash-success: #2f6e68; /* --teal */
+}
+
+body.dashboard-layout {
+  background-color: var(--dash-bg);
+  margin: 0;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: var(--dash-text-main);
+  line-height: 1.6;
+}
+
+/* Layout Penyedia (Admin) */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--dash-bg);
+}
+
+.dash-sidebar {
+  width: 260px;
+  background-color: var(--dash-sidebar);
+  border-right: 1px solid var(--dash-sidebar-2);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+}
+
+.dash-brand {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  margin-bottom: 2rem;
+  padding-left: 0.5rem;
+}
+
+.dash-brand span {
+  color: var(--dash-primary);
+}
+
+.dash-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.dash-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: var(--dash-sidebar-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.dash-nav-item:hover,
+.dash-nav-item.active {
+  background-color: rgba(232, 169, 59, 0.12);
+  color: var(--dash-primary);
+}
+
+.dash-main {
+  flex: 1;
+  padding: 2rem 3rem;
+  overflow-y: auto;
+}
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dash-header h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--dash-sidebar);
+  margin: 0;
+}
+
+/* Insight Cards */
+.dash-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.dash-card {
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
+}
+
+.dash-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--dash-primary);
+}
+
+.dash-card-title {
+  color: var(--dash-text-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dash-card-value {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--dash-sidebar);
+}
+
+/* Table Section */
+.dash-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.dash-section-header h2,
+.dash-section-header h3 {
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--dash-sidebar);
+}
+
+.btn-primary-dash {
+  background-color: var(--dash-primary);
+  color: var(--dash-primary-text);
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.15s;
+}
+
+.btn-primary-dash:hover {
+  background-color: var(--dash-primary-hover);
+}
+
+.dash-table-wrapper {
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dash-table th,
+.dash-table td {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--dash-border);
+  font-size: 0.9rem;
+}
+
+.dash-table th {
+  background-color: var(--dash-bg);
+  color: var(--dash-text-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.dash-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dash-table tbody tr {
+  transition: background 0.15s;
+}
+
+.dash-table tbody tr:hover {
+  background-color: var(--dash-bg);
+}
+
+.action-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--dash-text-muted);
+  transition: color 0.15s;
+  padding: 0.25rem;
+}
+
+.btn-icon.edit:hover {
+  color: var(--dash-primary);
+}
+.btn-icon.delete:hover {
+  color: var(--dash-danger);
+}
+
+/* Layout Pencari Jasa (User) */
+.user-dash-nav {
+  background: var(--dash-sidebar);
+  border-bottom: 1px solid var(--dash-sidebar-2);
+  padding: 1rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.user-dash-main {
+  padding: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.search-bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background: var(--dash-card-bg);
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: none;
+  border: 1px solid var(--dash-border);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  padding: 0.5rem;
+  background: transparent;
+  color: var(--dash-text-main);
+}
+
+.gig-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(27, 42, 74, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--dash-card-bg);
+  padding: 2rem;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 25px -5px rgba(27, 42, 74, 0.15);
+  animation: slideUp 0.25s ease-out;
+  border: 1px solid var(--dash-border);
+}
+
+.modal-content h2,
+.modal-content h3 {
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--dash-sidebar);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--dash-text-main);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--dash-border);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+  background: var(--dash-card-bg);
+  color: var(--dash-text-main);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--dash-primary);
+  box-shadow: 0 0 0 3px rgba(232, 169, 59, 0.15);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-secondary-dash {
+  background: transparent;
+  border: 1.5px solid var(--dash-sidebar);
+  color: var(--dash-sidebar);
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-secondary-dash:hover {
+  background: var(--dash-bg);
+}
