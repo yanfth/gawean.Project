@@ -30,9 +30,13 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/register`, {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
+      const res = await fetch(`${baseUrl}/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({ name, campus, email, password, role }),
       });
 
@@ -44,8 +48,10 @@ export default function Register() {
       const data = await res.json();
       localStorage.setItem("gawean_token", data.token);
 
-      navigate("/dashboard");
+      alert("Pendaftaran berhasil! Silakan login.");
+      navigate("/login");
     } catch (err: any) {
+      console.error("Fetch Error:", err);
       setError(err.message || "Gagal daftar. Coba lagi.");
     } finally {
       setLoading(false);
