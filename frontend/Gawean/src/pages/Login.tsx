@@ -2,8 +2,11 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Auth.css";
 
+type Role = "cari_jasa" | "buka_jasa";
+
 export default function Login() {
   const navigate = useNavigate();
+  const [role, setRole] = useState<Role>("cari_jasa");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +28,7 @@ export default function Login() {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, remember }),
+        body: JSON.stringify({ email, password, role, remember }),
       });
 
       if (!res.ok) {
@@ -34,10 +37,14 @@ export default function Login() {
       }
 
       const data = await res.json();
-      // Simpan token/session sesuai strategi auth backend (Sanctum/JWT)
-      localStorage.setItem("gawean_token", data.token);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      navigate("/dashboard");
+      if (data.user.role === 'penyedia_jasa') {
+        navigate("/dashboard-penyedia");
+      } else {
+        navigate("/dashboard-pencari");
+      }
     } catch (err: any) {
       setError(err.message || "Gagal masuk. Coba lagi.");
     } finally {
@@ -64,6 +71,25 @@ export default function Login() {
           {error && <div className="auth-error">{error}</div>}
 
           <form onSubmit={handleSubmit} noValidate>
+            <div className="auth-role-group">
+              <div
+                className={`auth-role ${role === "cari_jasa" ? "active" : ""}`}
+                onClick={() => setRole("cari_jasa")}
+              >
+                <span className="role-ic">🔍</span>
+                <span className="role-label">Cari Jasa</span>
+                <span className="role-desc">Masuk sebagai pencari</span>
+              </div>
+              <div
+                className={`auth-role ${role === "buka_jasa" ? "active" : ""}`}
+                onClick={() => setRole("buka_jasa")}
+              >
+                <span className="role-ic">🎒</span>
+                <span className="role-label">Buka Jasa</span>
+                <span className="role-desc">Masuk sebagai penyedia</span>
+              </div>
+            </div>
+
             <div className="auth-field">
               <label htmlFor="email">Email kampus</label>
               <input

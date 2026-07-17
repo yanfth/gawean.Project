@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
+import DashboardPenyedia from "./pages/DashboardPenyedia";
+import DashboardPencari from "./pages/DashboardPencari";
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -13,6 +16,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/dashboard-penyedia" element={<DashboardPenyedia />} />
+        <Route path="/dashboard-pencari" element={<DashboardPencari />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

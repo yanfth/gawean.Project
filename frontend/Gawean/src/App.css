@@ -89,6 +89,9 @@ h3 {
   font-weight: 700;
   font-size: 20px;
   letter-spacing: 0.5px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .nav-brand span {
