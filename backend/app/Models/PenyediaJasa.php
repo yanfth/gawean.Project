@@ -18,6 +18,12 @@ class PenyediaJasa extends Model
         'pengalaman_tahun',
         'portofolio_url',
         'status_aktif',
+        'is_verified',
+        'verification_doc',
+    ];
+
+    protected $casts = [
+        'is_verified' => 'boolean',
     ];
 
     public function user()
@@ -28,5 +34,10 @@ class PenyediaJasa extends Model
     public function jasa()
     {
         return $this->hasMany(Jasa::class, 'penyedia_jasa_id');
+    }
+
+    public function testimonials()
+    {
+        return $this->hasMany(Testimonial::class, 'penyedia_jasa_id');
     }
 }

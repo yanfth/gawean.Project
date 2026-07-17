@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Jasa extends Model
+class Testimonial extends Model
 {
-    protected $table = 'jasa';
-    protected $fillable = ['penyedia_jasa_id', 'title', 'description', 'category', 'price', 'image'];
+    protected $fillable = ['penyedia_jasa_id', 'client_name', 'content', 'rating'];
 
     public function penyedia()
     {

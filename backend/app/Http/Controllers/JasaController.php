@@ -31,12 +31,25 @@ class JasaController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        // Check verification status
+        if (!$user->penyediaJasa->is_verified) {
+            return response()->json([
+                'message' => 'Anda harus terverifikasi sebagai mahasiswa sebelum bisa memposting jasa. Silakan upload dokumen verifikasi terlebih dahulu.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category' => 'nullable|string',
-            'price' => 'nullable|numeric|min:0'
+            'price' => 'nullable|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('jasa_images', 'public');
+        }
 
         $jasa = Jasa::create([
             'penyedia_jasa_id' => $user->penyediaJasa->id,
@@ -44,6 +57,7 @@ class JasaController extends Controller
             'description' => $validated['description'] ?? null,
             'category' => $validated['category'] ?? null,
             'price' => $validated['price'] ?? 0,
+            'image' => $imagePath,
         ]);
 
         return response()->json(['message' => 'Jasa berhasil ditambahkan', 'data' => $jasa], 201);
@@ -54,7 +68,7 @@ class JasaController extends Controller
      */
     public function show(string $id)
     {
-        $jasa = Jasa::find($id);
+        $jasa = Jasa::with(['penyedia.user', 'penyedia.testimonials'])->find($id);
         if (!$jasa) return response()->json(['message' => 'Not found'], 404);
         return response()->json($jasa);
     }
@@ -78,8 +92,15 @@ class JasaController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'category' => 'nullable|string',
-            'price' => 'nullable|numeric|min:0'
+            'price' => 'nullable|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('jasa_images', 'public');
+        } else {
+            unset($validated['image']);
+        }
 
         $jasa->update($validated);
 
@@ -111,8 +132,8 @@ class JasaController extends Controller
      */
     public function getAll(Request $request)
     {
-        // For Pencari Jasa Dashboard
-        $jasas = Jasa::with('penyedia.user')->orderBy('created_at', 'desc')->get();
+        // For Pencari Jasa Dashboard - include penyedia info and testimonials
+        $jasas = Jasa::with(['penyedia.user', 'penyedia.testimonials'])->orderBy('created_at', 'desc')->get();
         return response()->json($jasas);
     }
 }
