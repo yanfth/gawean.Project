@@ -17,8 +17,11 @@ import {
 
   ImageIcon,
   FileText,
-  ChevronLeft
+  ChevronLeft,
+  MessageSquare,
+  ShoppingCart
 } from 'lucide-react';
+import ChatModal from '../components/ChatModal';
 import './Dashboard.css';
 
 interface Jasa {
@@ -37,7 +40,7 @@ interface Testimonial {
   rating: number;
 }
 
-type ActiveView = 'dashboard' | 'settings';
+type ActiveView = 'dashboard' | 'settings' | 'orders';
 
 export default function DashboardPenyedia() {
   const navigate = useNavigate();
@@ -45,6 +48,9 @@ export default function DashboardPenyedia() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJasa, setEditingJasa] = useState<Jasa | null>(null);
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
+
+  const [orders, setOrders] = useState<any[]>([]);
+  const [activeOrder, setActiveOrder] = useState<any>(null);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -90,11 +96,27 @@ export default function DashboardPenyedia() {
       navigate('/login');
       return;
     }
+
     fetchJasa();
     fetchVerificationStatus();
     fetchTestimonials();
+    fetchOrders();
     // eslint-disable-next-line
   }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch(`${baseUrl}/orders`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data.as_penyedia);
+      }
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+    }
+  };
 
   // ---- Data Fetching ----
   const fetchJasa = async () => {
@@ -373,11 +395,19 @@ export default function DashboardPenyedia() {
           </a>
           <a
             href="#"
+            className={`dash-nav-item ${activeView === 'orders' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setActiveView('orders'); fetchOrders(); }}
+          >
+            <ShoppingCart size={20} />
+            Pesanan & Chat
+          </a>
+          <a
+            href="#"
             className={`dash-nav-item ${activeView === 'settings' ? 'active' : ''}`}
             onClick={(e) => { e.preventDefault(); setActiveView('settings'); }}
           >
             <Settings size={20} />
-            Pengaturan
+            Pengaturan & Verifikasi
           </a>
         </nav>
         <button onClick={handleLogout} className="dash-nav-item" style={{ marginTop: 'auto', border: 'none', background: 'none', width: '100%', textAlign: 'left' }}>
@@ -498,6 +528,37 @@ export default function DashboardPenyedia() {
               </div>
             </section>
           </>
+        ) : activeView === 'orders' ? (
+            <div className="orders-section animate-fade-in" style={{ padding: '20px' }}>
+              <h2>Pesanan & Chat Masuk</h2>
+              <p style={{ color: 'var(--dash-text-muted)', marginBottom: '20px' }}>Kelola pesanan dan negosiasi dari pelanggan Anda.</p>
+              
+              {orders.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
+                  <MessageSquare size={40} style={{ color: 'var(--dash-text-muted)', marginBottom: '10px' }} />
+                  <p style={{ color: 'var(--dash-text-muted)' }}>Belum ada pesanan masuk.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  {orders.map(order => (
+                    <div key={order.id} style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '12px', border: '1px solid var(--dash-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 5px 0', fontSize: '1.1rem' }}>{order.jasa?.title}</h4>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--dash-text-muted)' }}>Pemesan: {order.pencari_jasa?.user?.name || 'Anonim'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <span className={`status-badge status-${order.status}`}>
+                          {order.status === 'negotiating' ? 'Nego' : order.status === 'accepted' ? 'Diterima' : order.status === 'rejected' ? 'Ditolak' : 'Selesai'}
+                        </span>
+                        <button onClick={() => setActiveOrder(order)} style={{ background: 'var(--dash-primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
+                          <MessageSquare size={16} /> Buka Chat
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
         ) : (
           /* Settings View */
           <div className="settings-panel">
@@ -694,6 +755,28 @@ export default function DashboardPenyedia() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Chat Modal */}
+      {activeOrder && (
+        <ChatModal 
+          order={activeOrder}
+          currentUser={user}
+          token={token!}
+          baseUrl={baseUrl}
+          isProvider={true}
+          onClose={() => { setActiveOrder(null); fetchOrders(); }}
+          onUpdateStatus={(newStatus) => {
+            fetchOrders();
+            // Automatically close modal if rejected or completed
+            if (newStatus === 'rejected' || newStatus === 'completed') {
+              setActiveOrder(null);
+            } else {
+              // Update local state to reflect change without re-fetching immediately inside modal
+              setActiveOrder({...activeOrder, status: newStatus});
+            }
+          }}
+        />
       )}
     </div>
   );

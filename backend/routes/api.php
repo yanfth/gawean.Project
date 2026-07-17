@@ -26,4 +26,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/testimonials', [TestimonialController::class, 'store']);
     Route::put('/testimonials/{id}', [TestimonialController::class, 'update']);
     Route::delete('/testimonials/{id}', [TestimonialController::class, 'destroy']);
+
+    // Orders & Chats
+    Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index']);
+    Route::post('/orders', [\App\Http\Controllers\OrderController::class, 'store']);
+    Route::get('/orders/{id}', [\App\Http\Controllers\OrderController::class, 'show']);
+    Route::patch('/orders/{id}/status', [\App\Http\Controllers\OrderController::class, 'updateStatus']);
+    Route::post('/orders/{id}/messages', [\App\Http\Controllers\OrderController::class, 'sendMessage']);
 });
