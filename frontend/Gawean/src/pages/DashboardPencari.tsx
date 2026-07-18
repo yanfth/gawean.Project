@@ -245,6 +245,7 @@ export default function DashboardPencari() {
         <div className="user-nav-links">
           <a href="#" className={mainView === 'browse' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setMainView('browse'); }}>Cari Jasa</a>
           <a href="#" className={mainView === 'orders' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setMainView('orders'); fetchOrders(); }}>Pesanan & Chat</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/komunitas'); }}>Komunitas</a>
           <a href="#" className={mainView === 'profile' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setMainView('profile'); }}>Profil Saya</a>
         </div>
         <div className="user-nav-right">

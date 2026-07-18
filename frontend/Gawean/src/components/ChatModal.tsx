@@ -169,7 +169,7 @@ export default function ChatModal({ order, currentUser, token, baseUrl, onClose,
         )}
 
         <div className="chat-messages">
-          {messages.map((msg, idx) => {
+          {messages.map((msg) => {
             let isMe = false;
             
             // Safe IDs
