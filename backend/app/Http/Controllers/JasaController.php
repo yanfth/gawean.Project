@@ -43,7 +43,7 @@ class JasaController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category' => 'nullable|string',
-            'price' => 'nullable|numeric|min:0',
+            'price' => 'nullable|numeric|min:0|max:999999999999',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
@@ -93,7 +93,7 @@ class JasaController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'category' => 'nullable|string',
-            'price' => 'nullable|numeric|min:0',
+            'price' => 'nullable|numeric|min:0|max:999999999999',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
