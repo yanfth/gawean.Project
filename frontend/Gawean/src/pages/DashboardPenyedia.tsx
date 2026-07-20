@@ -19,7 +19,8 @@ import {
   FileText,
   ChevronLeft,
   MessageSquare,
-  ShoppingCart
+  ShoppingCart,
+  User
 } from 'lucide-react';
 import ChatModal from '../components/ChatModal';
 import './Dashboard.css';
@@ -85,11 +86,20 @@ export default function DashboardPenyedia() {
 
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : null;
+  const [user, setUser] = useState(userStr ? JSON.parse(userStr) : null);
   const userName = user?.name || 'Penyedia';
   const initial = userName.charAt(0).toUpperCase();
   const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
   const storageUrl = baseUrl.replace('/api', '') + '/storage/';
+
+  const photoUrl = user?.profile_photo 
+    ? (user.profile_photo.startsWith('http') ? user.profile_photo : `${storageUrl}${user.profile_photo}`) 
+    : null;
+
+  const [profileName, setProfileName] = useState(user?.name || '');
+  const [profileEmail, setProfileEmail] = useState(user?.email || '');
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -133,6 +143,41 @@ export default function DashboardPenyedia() {
       } else {
         const data = await res.json();
         alert(data.message || 'Gagal menghapus chat.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan pada server.');
+    }
+  };
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append('name', profileName);
+      formData.append('email', profileEmail);
+      if (profilePhoto) {
+        formData.append('profile_photo', profilePhoto);
+      }
+
+      const res = await fetch(`${baseUrl}/profile`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        alert('Profil berhasil diperbarui!');
+        setProfilePhoto(null);
+      } else {
+        const errData = await res.json();
+        alert('Gagal memperbarui profil: ' + (errData.message || 'Error'));
       }
     } catch (err) {
       console.error(err);
@@ -449,7 +494,11 @@ export default function DashboardPenyedia() {
                   <span className="verified-badge"><ShieldCheck size={14} /> Terverifikasi</span>
                 )}
                 <span style={{ fontWeight: 600 }}>Halo, {userName}!</span>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--dash-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{initial}</div>
+                {photoUrl ? (
+                  <img src={photoUrl} alt="Profile" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--dash-primary)' }} />
+                ) : (
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--dash-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{initial}</div>
+                )}
               </div>
             </header>
 
@@ -598,6 +647,53 @@ export default function DashboardPenyedia() {
                 <h1>Pengaturan</h1>
               </div>
             </header>
+
+            {/* Profile Update Section */}
+            <div className="settings-section">
+              <h3><User size={18} style={{ marginRight: '0.5rem', verticalAlign: 'text-bottom' }} /> Profil Saya</h3>
+              <form onSubmit={handleProfileUpdate} style={{ background: 'var(--dash-bg)', padding: '20px', borderRadius: '8px', border: '1px solid var(--dash-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--dash-card-bg)', overflow: 'hidden', border: '2px solid var(--dash-primary)' }}>
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : photoUrl ? (
+                      <img src={photoUrl} alt="Current Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'var(--dash-text-muted)' }}>{initial}</div>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="photo-upload-penyedia" style={{ display: 'inline-block', background: 'var(--dash-primary)', color: 'white', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                      Ganti Foto
+                    </label>
+                    <input 
+                      id="photo-upload-penyedia" 
+                      type="file" 
+                      accept="image/*" 
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setProfilePhoto(file);
+                          setPhotoPreview(URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                    <p style={{ fontSize: '0.8rem', color: 'var(--dash-text-muted)', marginTop: '5px' }}>Format JPG, PNG. Max 2MB.</p>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Nama Lengkap</label>
+                  <input type="text" className="form-control" value={profileName} onChange={(e) => setProfileName(e.target.value)} required />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input type="email" className="form-control" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} required />
+                </div>
+                <button type="submit" className="btn-primary-dash">Simpan Profil</button>
+              </form>
+            </div>
 
             {/* Verification Section */}
             <div className="settings-section">
