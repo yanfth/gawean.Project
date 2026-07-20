@@ -2,8 +2,6 @@
 
 Gawean.io adalah aplikasi web dengan arsitektur terpisah antara **frontend** (React + Vite) dan **backend** (Laravel REST API).
 
-## 🧱 Tech Stack
-
 **Frontend**
 - [Vite](https://vitejs.dev/) + React
 - TypeScript
@@ -115,6 +113,10 @@ Pastikan Laravel API mengizinkan request dari frontend dengan mengatur **CORS** 
 | `php artisan serve` | Menjalankan server Laravel |
 | `php artisan migrate` | Menjalankan migrasi database |
 | `php artisan migrate:fresh --seed` | Reset database + seeding |
+
+**How To Clone Repo**
+git clone https://github.com
+
 
 ## 🤝 Kontribusi
 
