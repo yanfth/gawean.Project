@@ -7,6 +7,7 @@ import './Dashboard.css';
 interface User {
   id: number;
   name: string;
+  profile_photo?: string | null;
 }
 
 interface Testimonial {

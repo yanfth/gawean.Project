@@ -104,6 +104,11 @@
   border-radius: 10px;
   transition: background 0.15s;
   position: relative;
+  align-items: flex-end;
+}
+
+.kom-msg-row.msg-me {
+  flex-direction: row-reverse;
 }
 
 .kom-msg-row:hover {
@@ -126,6 +131,7 @@
   font-weight: 700;
   font-size: 0.9rem;
   color: #fff;
+  margin-bottom: 4px;
 }
 
 .kom-msg-avatar.color-0 { background: linear-gradient(135deg, #e8a93b, #d69526); }
@@ -147,13 +153,27 @@
 .kom-msg-body {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.kom-msg-row.msg-me .kom-msg-body {
+  align-items: flex-end;
+}
+
+.kom-msg-row.msg-other .kom-msg-body {
+  align-items: flex-start;
 }
 
 .kom-msg-header {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+}
+
+.kom-msg-row.msg-me .kom-msg-header {
+  flex-direction: row-reverse;
 }
 
 .kom-msg-username {
@@ -180,6 +200,21 @@
   color: var(--dash-text-main);
   line-height: 1.55;
   word-break: break-word;
+  padding: 10px 14px;
+  max-width: 85%;
+}
+
+.kom-msg-row.msg-me .kom-msg-content {
+  background-color: var(--primary-color, #4f46e5);
+  color: white;
+  border-radius: 14px 14px 0 14px;
+}
+
+.kom-msg-row.msg-other .kom-msg-content {
+  background-color: var(--dash-card-bg, #ffffff);
+  border: 1px solid var(--dash-border, #e5e7eb);
+  color: var(--dash-text-main);
+  border-radius: 14px 14px 14px 0;
 }
 
 /* ─── Delete Button ─── */

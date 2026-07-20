@@ -85,9 +85,9 @@ export default function ChatModal({ order, currentUser, token, baseUrl, onClose,
       });
       
       if (res.ok) {
-        const msg = await res.json();
-        setMessages(prev => [...prev, msg]);
         setNewMessage('');
+        // Fetch order details again to instantly get any bot auto-replies
+        fetchOrderDetails();
       }
     } catch (err) {
       console.error("Failed to send message:", err);

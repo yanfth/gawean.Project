@@ -134,6 +134,34 @@ class OrderController extends Controller
         
         $order->touch();
 
+        // Bot Auto-Reply Logic
+        $order->load(['jasa.penyedia.user', 'pencariJasa.user']);
+        $oppositeUser = null;
+        if ($isPencari) {
+            $oppositeUser = $order->jasa->penyedia->user ?? null;
+        } else {
+            $oppositeUser = $order->pencariJasa->user ?? null;
+        }
+
+        // Jika user lawan tidak memiliki profile_photo, anggap sebagai akun dummy/bot
+        if ($oppositeUser && empty($oppositeUser->profile_photo)) {
+            $botReplies = [
+                'Terima kasih atas pesannya! Saya akan segera memproses pesanan ini.',
+                'Baik, saya mengerti. Ada hal lain yang bisa dibantu?',
+                'Siap! Mohon tunggu sebentar ya.',
+                'Halo! Pesan Anda sudah saya terima.',
+                'Baik, akan saya sesuaikan dengan permintaan.',
+                'Terima kasih, saya akan menghubungi Anda kembali segera.'
+            ];
+            $randomReply = $botReplies[array_rand($botReplies)];
+
+            $order->messages()->create([
+                'sender_id' => $oppositeUser->id,
+                'content' => $randomReply,
+            ]);
+            $order->touch();
+        }
+
         return response()->json($message->load('sender'), 201);
     }
 

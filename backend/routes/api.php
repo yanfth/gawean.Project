@@ -45,5 +45,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/community/channels/{id}', [\App\Http\Controllers\CommunityController::class, 'deleteChannel']);
     Route::get('/community/channels/{id}/messages', [\App\Http\Controllers\CommunityController::class, 'messages']);
     Route::post('/community/channels/{id}/messages', [\App\Http\Controllers\CommunityController::class, 'sendMessage']);
+    Route::post('/community/channels/{id}/bot-messages', [\App\Http\Controllers\CommunityController::class, 'sendBotMessage']);
     Route::delete('/community/messages/{id}', [\App\Http\Controllers\CommunityController::class, 'deleteMessage']);
 });
