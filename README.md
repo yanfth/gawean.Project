@@ -115,7 +115,10 @@ Pastikan Laravel API mengizinkan request dari frontend dengan mengatur **CORS** 
 | `php artisan migrate:fresh --seed` | Reset database + seeding |
 
 **How To Clone Repo**
-git clone https://github.com
+```git
+git clone https://github.com/yanfth/gawean.Project.git
+```
+
 
 
 ## 🤝 Kontribusi
