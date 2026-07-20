@@ -446,8 +446,12 @@ export default function DashboardPencari() {
                     {/* Card Body */}
                     <div className="jasa-card-body">
                       <div className="jasa-card-provider">
-                        <div className="jasa-card-provider-avatar">
-                          {providerName.charAt(0).toUpperCase()}
+                        <div className="jasa-card-provider-avatar" style={{ overflow: 'hidden' }}>
+                          {jasa.penyedia?.user?.profile_photo ? (
+                            <img src={jasa.penyedia.user.profile_photo.startsWith('http') ? jasa.penyedia.user.profile_photo : `${storageUrl}${jasa.penyedia.user.profile_photo}`} alt={providerName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            providerName.charAt(0).toUpperCase()
+                          )}
                         </div>
                         <div className="jasa-card-provider-info">
                           <h4>{providerName}</h4>
@@ -459,9 +463,9 @@ export default function DashboardPencari() {
                         <span className="jasa-card-tag">{jasa.category || 'Umum'}</span>
                       </div>
 
-                      <p className="jasa-card-desc">
-                        {jasa.description || 'Tidak ada deskripsi.'}
-                      </p>
+                      <h3 className="jasa-card-title" style={{ marginTop: '12px', marginBottom: '12px', fontSize: '1.1rem', fontWeight: 600, color: 'var(--dash-text)' }}>
+                        {jasa.title}
+                      </h3>
 
                       <div className="jasa-card-footer">
                         {jasa.penyedia?.is_verified ? (
@@ -579,8 +583,12 @@ export default function DashboardPencari() {
             <div className="detail-modal-body">
               {/* Provider Info */}
               <div className="detail-modal-provider">
-                <div className="detail-modal-provider-avatar">
-                  {(selectedJasa.penyedia?.user?.name || 'A').charAt(0).toUpperCase()}
+                <div className="detail-modal-provider-avatar" style={{ overflow: 'hidden' }}>
+                  {selectedJasa.penyedia?.user?.profile_photo ? (
+                    <img src={selectedJasa.penyedia.user.profile_photo.startsWith('http') ? selectedJasa.penyedia.user.profile_photo : `${storageUrl}${selectedJasa.penyedia.user.profile_photo}`} alt={selectedJasa.penyedia?.user?.name || 'Anonim'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (selectedJasa.penyedia?.user?.name || 'A').charAt(0).toUpperCase()
+                  )}
                 </div>
                 <div className="detail-modal-provider-info">
                   <h3>{selectedJasa.penyedia?.user?.name || 'Anonim'}</h3>
