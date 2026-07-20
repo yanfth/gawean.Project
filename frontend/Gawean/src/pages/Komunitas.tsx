@@ -160,8 +160,38 @@ export default function Komunitas() {
   }, [activeChannel?.id]);
 
   useEffect(() => {
-    // scroll logic removed from here
-  }, [messages]);
+    if (!activeChannel) return;
+    // Bot otomatis yang ikut meramaikan komunitas (di semua tab)
+    const botInterval = setInterval(() => {
+      const botReplies = [
+        'Wah, keren banget! Lanjutkan kawan! 🔥',
+        'Ada yang lagi cari project freelance juga kah?',
+        'Halo semuanya! Semangat ngoding/design ya!',
+        'Gawean.io makin rame aja nih, mantap 👍',
+        'Btw ada yang punya info loker WFH?',
+        'Jangan lupa istirahat, kesehatan nomor satu ☕',
+        'Gas terus sampai sukses! 🚀',
+        'Siapa yang lagi begadang ngerjain project angkat tangan 🙋‍♂️',
+        'Ada tips buat dapetin klien pertama nggak suhu?',
+        'Komunitas yang supportif banget, thx all!'
+      ];
+      const randomReply = botReplies[Math.floor(Math.random() * botReplies.length)];
+      
+      fetch(`${baseUrl}/community/channels/${activeChannel.id}/bot-messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ content: randomReply })
+      }).then(res => {
+        if (res.ok) fetchMessages(activeChannel.id, true);
+      }).catch(err => console.error('Failed to send bot message:', err));
+    }, 15000);
+
+    return () => clearInterval(botInterval);
+  }, [activeChannel]);
 
   const fetchChannels = async () => {
     try {
@@ -510,7 +540,7 @@ export default function Komunitas() {
                           : null;
 
                         return (
-                          <div className="kom-msg-row" key={msg.id}>
+                          <div className={`kom-msg-row ${isMe ? 'msg-me' : 'msg-other'}`} key={msg.id}>
                             <div className={`kom-msg-avatar ${colorCls}`}>
                               {userPhoto ? (
                                 <img src={userPhoto} alt={msg.user?.name} />

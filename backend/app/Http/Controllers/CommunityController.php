@@ -61,9 +61,6 @@ class CommunityController extends Controller
         return response()->json(['message' => 'Channel deleted successfully']);
     }
 
-    /**
-     * Get messages for a specific channel (paginated).
-     */
     public function messages(Request $request, $channelId)
     {
         $channel = CommunityChannel::findOrFail($channelId);
@@ -71,12 +68,47 @@ class CommunityController extends Controller
         $messages = $channel->messages()
             ->with('user:id,name,profile_photo')
             ->orderBy('created_at', 'asc')
-            ->get();
+            ->get()
+            ->toArray();
+
+        $botMessages = \Illuminate\Support\Facades\Cache::get("bot_messages_{$channelId}", []);
+        
+        $allMessages = array_merge($messages, $botMessages);
+        usort($allMessages, function($a, $b) {
+            return strtotime($a['created_at']) - strtotime($b['created_at']);
+        });
 
         return response()->json([
             'channel' => $channel,
-            'messages' => $messages,
+            'messages' => $allMessages,
         ]);
+    }
+
+    public function sendBotMessage(Request $request, $channelId)
+    {
+        $request->validate([
+            'content' => 'required|string|max:2000',
+        ]);
+
+        $botMessages = \Illuminate\Support\Facades\Cache::get("bot_messages_{$channelId}", []);
+
+        $newMessage = [
+            'id' => -rand(10000, 99999),
+            'channel_id' => (int)$channelId,
+            'user_id' => -999,
+            'content' => $request->input('content'),
+            'created_at' => now()->toIso8601String(),
+            'user' => [
+                'id' => -999,
+                'name' => 'Gawean Bot 🤖',
+                'profile_photo' => null
+            ]
+        ];
+
+        $botMessages[] = $newMessage;
+        \Illuminate\Support\Facades\Cache::put("bot_messages_{$channelId}", $botMessages);
+
+        return response()->json($newMessage, 201);
     }
 
     /**
