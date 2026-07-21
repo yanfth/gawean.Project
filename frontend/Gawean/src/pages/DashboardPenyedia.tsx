@@ -101,6 +101,12 @@ export default function DashboardPenyedia() {
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
+  const getImageUrl = (imagePath: string | null) => {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+    return storageUrl + imagePath;
+  };
+
   useEffect(() => {
     if (!token) {
       navigate('/login');
@@ -262,7 +268,7 @@ export default function DashboardPenyedia() {
       setCategory(jasa.category || '');
       setDescription(jasa.description || '');
       setPrice(jasa.price || '');
-      setImagePreview(jasa.image ? storageUrl + jasa.image : null);
+      setImagePreview(getImageUrl(jasa.image) || null);
       setImageFile(null);
     } else {
       setEditingJasa(null);
@@ -571,7 +577,7 @@ export default function DashboardPenyedia() {
                         <tr key={jasa.id}>
                           <td>
                             {jasa.image ? (
-                              <img src={storageUrl + jasa.image} alt={jasa.title} className="jasa-table-image" />
+                              <img src={getImageUrl(jasa.image)} alt={jasa.title} className="jasa-table-image" />
                             ) : (
                               <div className="jasa-table-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <ImageIcon size={18} color="var(--dash-text-muted)" />

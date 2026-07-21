@@ -486,7 +486,7 @@ export default function Komunitas() {
         </aside>
 
         {/* Main Content — Chat Area */}
-        <main className="pencari-main" style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
+        <main className="pencari-main" style={{ padding: 0, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)' }}>
           {activeChannel ? (
             <>
               {/* Chat Header */}
