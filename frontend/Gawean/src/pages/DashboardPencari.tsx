@@ -77,6 +77,12 @@ export default function DashboardPencari() {
     ? (currentUser.profile_photo.startsWith('http') ? currentUser.profile_photo : `${storageUrl}${currentUser.profile_photo}`) 
     : null;
 
+  const getImageUrl = (imagePath: string | null) => {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+    return storageUrl + imagePath;
+  };
+
   useEffect(() => {
     if (!token) {
       navigate('/login');
@@ -432,7 +438,7 @@ export default function DashboardPencari() {
                     {/* Card Image */}
                     <div className="jasa-card-image">
                       {jasa.image ? (
-                        <img src={storageUrl + jasa.image} alt={jasa.title} />
+                        <img src={getImageUrl(jasa.image)} alt={jasa.title} />
                       ) : (
                         <div className="no-image">
                           <ImageIcon size={32} />
@@ -572,7 +578,7 @@ export default function DashboardPencari() {
             {/* Modal Image */}
             <div className="detail-modal-image">
               {selectedJasa.image ? (
-                <img src={storageUrl + selectedJasa.image} alt={selectedJasa.title} />
+                <img src={getImageUrl(selectedJasa.image)} alt={selectedJasa.title} />
               ) : (
                 <div className="no-image">Tidak ada gambar</div>
               )}

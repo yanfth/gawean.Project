@@ -84,9 +84,28 @@ class OrderController extends Controller
                 'content' => $validated['initial_message'],
             ]);
             $order->touch(); // Update updated_at
+
+            // Bot Auto-Reply Logic for Initial Message
+            $order->load(['jasa.penyedia.user']);
+            $oppositeUser = $order->jasa->penyedia->user ?? null;
+            if ($oppositeUser && empty($oppositeUser->profile_photo)) {
+                $botReplies = [
+                    'Terima kasih atas pesanannya! Saya akan segera memproses ini.',
+                    'Halo! Pesanan Anda sudah saya terima dan akan segera saya cek.',
+                    'Siap! Mohon tunggu sebentar ya.',
+                    'Terima kasih sudah memesan jasa saya, akan saya sesuaikan dengan permintaan.',
+                ];
+                $randomReply = $botReplies[array_rand($botReplies)];
+
+                $order->messages()->create([
+                    'sender_id' => $oppositeUser->id,
+                    'content' => $randomReply,
+                ]);
+                $order->touch();
+            }
         }
 
-        $order->load(['jasa.penyedia.user', 'messages']);
+        $order->load(['jasa.penyedia.user', 'messages.sender']);
         return response()->json($order, 201);
     }
 
